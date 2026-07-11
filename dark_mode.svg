@@ -16,7 +16,7 @@ size-adjust: 109%;
 text, tspan {white-space: pre;}
 </style>
 <rect width="985px" height="530px" fill="#161b22" rx="15"/>
-<text x="42" y="28.6" fill="#c9d1d9" class="ascii" font-size="10.56px">
+<text x="42" y="28.6" fill="#c9d1d9" class="ascii" font-size="10.56px" transform="matrix(0.85 0 0 1 6.3 0)">
 <tspan x="42" y="28.6">          //(*#/((,,*/.    .     #,.</tspan>
 <tspan x="42" y="39.8">      ((*,   . .,              ,*.*(.#(</tspan>
 <tspan x="42" y="51.0">     %      .    .,***//,,,,,..    ..,/,</tspan>
