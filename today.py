@@ -46,8 +46,22 @@ def simple_request(func_name, query, variables):
     """
     request = requests.post('https://api.github.com/graphql', json={'query': query, 'variables':variables}, headers=HEADERS)
     if request.status_code == 200:
+        response = request.json()
+        if response.get('errors'): # GitHub returns 200 with partial data when only some fields fail
+            print('Warning:', func_name, 'returned GraphQL errors:', response['errors'])
+        if response.get('data') is None:
+            raise Exception(func_name, ' returned no data', request.text, QUERY_COUNT)
         return request
     raise Exception(func_name, ' has failed with a', request.status_code, request.text, QUERY_COUNT)
+
+
+def valid_edges(edges):
+    """
+    Drops edges whose node is null
+    GitHub returns a null node (alongside an error) for repositories it cannot resolve,
+    e.g. ones the token has no access to, or ones removed while the query was running
+    """
+    return [edge for edge in edges if edge is not None and edge.get('node') is not None]
 
 
 def graph_commits(start_date, end_date):
@@ -103,7 +117,7 @@ def graph_repos_stars(count_type, owner_affiliation, cursor=None, add_loc=0, del
         if count_type == 'repos':
             return request.json()['data']['user']['repositories']['totalCount']
         elif count_type == 'stars':
-            return stars_counter(request.json()['data']['user']['repositories']['edges'])
+            return stars_counter(valid_edges(request.json()['data']['user']['repositories']['edges']))
 
 
 def recursive_loc(owner, repo_name, data, cache_comment, addition_total=0, deletion_total=0, my_commits=0, cursor=None):
@@ -209,10 +223,10 @@ def loc_query(owner_affiliation, comment_size=0, force_cache=False, cursor=None,
     variables = {'owner_affiliation': owner_affiliation, 'login': USER_NAME, 'cursor': cursor}
     request = simple_request(loc_query.__name__, query, variables)
     if request.json()['data']['user']['repositories']['pageInfo']['hasNextPage']:   # If repository data has another page
-        edges += request.json()['data']['user']['repositories']['edges']            # Add on to the LoC count
+        edges += valid_edges(request.json()['data']['user']['repositories']['edges']) # Add on to the LoC count
         return loc_query(owner_affiliation, comment_size, force_cache, request.json()['data']['user']['repositories']['pageInfo']['endCursor'], edges)
     else:
-        return cache_builder(edges + request.json()['data']['user']['repositories']['edges'], comment_size, force_cache)
+        return cache_builder(edges + valid_edges(request.json()['data']['user']['repositories']['edges']), comment_size, force_cache)
 
 
 def cache_builder(edges, comment_size, force_cache, loc_add=0, loc_del=0):
