@@ -1,10 +1,10 @@
-This line is a comment block. Write whatever you want here.
-This line is a comment block. Write whatever you want here.
-This line is a comment block. Write whatever you want here.
-This line is a comment block. Write whatever you want here.
-This line is a comment block. Write whatever you want here.
-This line is a comment block. Write whatever you want here.
-This line is a comment block. Write whatever you want here.
+This is the lines-of-code cache for today.py. The workflow writes it, do not edit it by hand.
+The first seven lines are this comment block, which today.py skips (comment_size=7 in __main__).
+Every line below describes one repository, in the order the GitHub API returned it:
+  sha256(owner/name)  commits on the default branch  my commits  additions  deletions
+A repository is only re-queried when its commit count changes, which is what keeps the daily
+run cheap. Delete one line to have that repository recounted on the next run, or delete the
+whole file to recount every repository from scratch.
 b6066041a9610d60b6cce9cc6c26c35887121cad329ebd771f9170cab850f055 6 0 0 0
 8f392a664abac5e6ffce457889882ffe0765444c6c5a47ddaa0f8d93e5413c96 48 0 0 0
 2ea1957e4e997d00be9a7ef448832deab91486a9481689011387a00b33d0483b 12 0 0 0

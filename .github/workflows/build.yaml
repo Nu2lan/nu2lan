@@ -7,14 +7,22 @@ on:
     - cron: "0 4 * * *"
 permissions:
   contents: write
+# Serialise runs: the scheduled run and a push can otherwise overlap and the second
+# job's push is rejected, because the first one moved main out from under it.
+concurrency:
+  group: readme-build
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
-          fetch-depth: 1
+          # Full history: the rebase fallback in the commit step needs a real merge base,
+          # and a shallow clone has none. This repository is small enough for it to be free.
+          fetch-depth: 0
       - name: Get Python 3.12
         uses: actions/setup-python@v7
         with:
@@ -35,8 +43,11 @@ jobs:
       - name: Commit
         run: |-
           git add .
-          git diff
+          git diff --cached
           git config --global user.email "github-actions-bot@nu2lan.github.io"
           git config --global user.name "nu2lan/GitHub-Actions-Bot"
           git commit -m "Updated README" -a || echo "No changes to commit"
-          git push
+          # The concurrency group serialises this workflow's own runs, so a rejected push
+          # means somebody else pushed to main while the job ran: replay this commit on top
+          # of theirs and try once more, rather than failing the run over a race.
+          git push || (git pull --rebase --autostash origin main && git push)
